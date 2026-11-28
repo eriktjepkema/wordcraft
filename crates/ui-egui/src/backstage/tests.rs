@@ -748,7 +748,7 @@ fn about_stays_at_the_bottom_of_a_side_menu_that_fits() {
 }
 
 /// The side menu is production's rail: 200 pt wide (five rail columns, `LeastWidth::SideMenu`), its page rows about
-/// 38 pt tall one after another. The footer's links are rows of the same place, so they read in the rail's white ink;
+/// 38 pt tall a tight gap apart. The footer's links are rows of the same place, so they read in the rail's white ink;
 /// production's were a little shorter (32 pt), which the side menu place has no row for.
 #[test]
 fn the_side_menu_rows_are_production_s_rail_rows() {
@@ -758,7 +758,9 @@ fn the_side_menu_rows_are_production_s_rail_rows() {
     // The least width holds in the row beside the page: before, the row gave the menu only its widest name (~123 pt).
     assert!((190.0..=260.0).contains(&info.width()), "the menu is production's 200 pt rail: {info:?}");
     assert!((34.0..=44.0).contains(&info.height()), "a page row is a rail row: {info:?}");
-    assert!((recover.min.y - info.max.y).abs() < 1.0, "the rows follow each other without a gap: {info:?} {recover:?}");
+    // v0.19.1's pitch was ~42 pt for 38 pt rows: the rows are a little apart, not touching and not far apart.
+    let gap = recover.min.y - info.max.y;
+    assert!((1.0..=8.0).contains(&gap), "the rows have a small gap between them: {info:?} {recover:?}");
     assert!(about.height() <= info.height() + 1.0, "the footer link is no taller than a page row: {info:?} {about:?}");
 }
 

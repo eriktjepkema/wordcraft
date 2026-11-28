@@ -250,7 +250,8 @@ fn side_menu(ui: &mut Ui, band: f32, current: &str, has_document: bool, show_dis
         .least_width(LeastWidth::SideMenu)
         .surface(SurfaceKind::Brand)
         .label(label("File"))
-        .gap(Gap::None)
+        // v0.19.1's row pitch (~42 pt against the 38 pt rows): the theme's tight gap between the page rows.
+        .gap(Gap::Tight)
         .scroll(Scroll::vertical())
         .header(move |ui, _| {
             ui.add_space(band);
