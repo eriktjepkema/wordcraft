@@ -716,8 +716,17 @@ fn show_reading(app: &mut WordApp, ui: &mut Ui, layout: &Arc<DocLayout>, full: R
     let mut state = std::mem::take(&mut app.canvas.reading);
     let source = source::WordPages::new(app, layout, false, None);
     let out = ReadingView::new(tl!("Document"), &source, &mut state, paper).zoom(zoom).show_at(ui, columns);
+    // The page-turn row sits at the bottom right, as in v0.19.1 (the far end, so the bottom left in a right-to-left UI),
+    // the page view's side margin in from the edge.
+    let margin = Env::of(ui).tokens.space.inset.page_side;
+    let footer = footer.shrink2(egui::vec2(margin, 0.0));
+    let far = if crate::i18n::current().rtl() {
+        egui::Layout::left_to_right(egui::Align::Center)
+    } else {
+        egui::Layout::right_to_left(egui::Align::Center)
+    };
     let nav = ui
-        .scope_builder(egui::UiBuilder::new().max_rect(footer), |ui| {
+        .scope_builder(egui::UiBuilder::new().max_rect(footer).layout(far), |ui| {
             ReadingNav::new(&mut state, layout.pages.len()).position(true).action(tl!("Edit Document")).show(ui)
         })
         .inner;

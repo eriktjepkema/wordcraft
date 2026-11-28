@@ -253,6 +253,48 @@ fn drawing_over_the_pages_follows_the_read_mode_page_color() {
     assert_eq!(blank(&a), Rgb::WHITE, "the paper under the raster, not the page color");
 }
 
+/// #8019: at 1440 x 900 Read Mode lays out several narrow columns (v0.19.1: 4), not the two the body
+/// text's measure gave after the port.
+#[test]
+fn read_mode_lays_out_several_columns_at_1440() {
+    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::from_text("Hello WordCraft")), Default::default());
+    a.run("view.readMode", json!({})).unwrap();
+    let mut h = crate::test_harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
+        |ui, app: &mut WordApp| {
+            let ctx = ui.ctx().clone();
+            app.logic(&ctx);
+            app.ui(ui);
+        },
+        a,
+    );
+    h.run_steps(4);
+    let px = ReadingView::screen_scale(1.0) * h.state().session.view.read_width;
+    assert!(px > 0.0 && 4.0 * px < 1440.0, "columns {px} px wide: four do not fit");
+}
+
+/// #8019: the page-turn row (position and Edit Document) sits in the bottom-right quadrant, as in v0.19.1,
+/// not at the bottom left where craft's row starts.
+#[test]
+fn read_mode_pager_is_at_the_bottom_right() {
+    use egui_kittest::kittest::Queryable;
+    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::from_text("Hello WordCraft")), Default::default());
+    a.run("view.readMode", json!({})).unwrap();
+    let mut h = crate::test_harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
+        |ui, app: &mut WordApp| {
+            let ctx = ui.ctx().clone();
+            app.logic(&ctx);
+            app.ui(ui);
+        },
+        a,
+    );
+    h.run_steps(4);
+    let screen = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1440.0, 900.0));
+    for label in ["Edit Document", "1 / 1"] {
+        let r = h.get_all_by_label(label).last().unwrap().rect();
+        assert!(r.center().x > screen.center().x && r.center().y > screen.center().y, "{label} at {r:?}: not bottom right");
+    }
+}
+
 /// #299: the caret's colour is worked out only when the caret is drawn: with text selected
 /// there is no caret, so the page's draw list isn't built for it.
 #[test]

@@ -56,7 +56,7 @@ impl Component for ReadingProbe {
 
     fn measure(&mut self, cx: &MeasureCx<'_, Self>) -> egui::Vec2 {
         let measure = ReadingMeasure::of(TypeRole::Body, |run| cx.layout(run));
-        self.measured = Some(ReadingMetrics::new(cx.style.column_gap, cx.style.nav_bar, measure));
+        self.measured = Some(metrics(cx.style.column_gap, cx.style.nav_bar, measure));
         egui::Vec2::ZERO
     }
 
@@ -67,6 +67,19 @@ impl Component for ReadingProbe {
     fn finish(self, cx: Cx<'_, Self>) -> ReadingProbeOutput {
         ReadingProbeOutput { response: cx.response.clone(), metrics: self.measured }
     }
+}
+
+/// Column widths Read Mode has always used (about one column per 295 screen points, none under 192), as v0.19.1 laid out 4
+/// columns at 1440 screen points. craft's body-text measure (66 characters) gives 2 there, so only the gaps come from it.
+const COLUMN_TARGET: f32 = 295.0;
+const COLUMN_MIN: f32 = 192.0;
+
+fn metrics(column_gap: f32, nav_bar: f32, measure: ReadingMeasure) -> ReadingMetrics {
+    let mut m = ReadingMetrics::new(column_gap, nav_bar, measure);
+    // lean: fixed px, not the text size; follow the body text again if Read Mode should scale with it.
+    m.column_target = COLUMN_TARGET;
+    m.column_min = COLUMN_MIN;
+    m
 }
 
 /// The reading metrics under the current theme, or `None` when the probe did not measure this pass.
