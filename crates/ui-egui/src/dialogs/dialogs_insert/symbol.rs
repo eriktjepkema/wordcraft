@@ -3,6 +3,7 @@ use std::sync::Arc;
 use craft::behavior::{ColumnWidth, Selection, SelectionChange, keyed};
 use craft::font_manager::Catalog;
 use craft::font_manager::picker::FontPickerSettings;
+use craft::theme::Mode;
 use craft::ui::contract::{Bind, CollectionEvent, ColumnKey, ColumnSpec, SelectMode, Show as _, ShowCollection as _, ShowContainer as _};
 use craft::ui::dialog::{DialogId, DialogResult, DialogStack, HeldAnswer, HeldOk, StackDialog, dialog_id};
 use craft::ui::display::{Kbd, Text};
@@ -11,7 +12,7 @@ use craft::ui::layout_components::Stack;
 use craft::ui::list::{ListRow, ThumbAspect, ThumbSize};
 use craft::ui::patterns::form_dialogs::{FormCx, FormDialog};
 use craft::ui::primitives::ContentPainterCx;
-use craft::ui::runtime::env::Label;
+use craft::ui::runtime::env::{Env, Label};
 use craft::ui::table::Table;
 use craft::ui::tabs::{Tab, TabKind, TabStrip};
 use craft::ui::tile_grid::{CaptionPlace, Tile, TileGrid};
@@ -614,7 +615,8 @@ fn symbol_page(ui: &mut Ui, form: &mut SymbolForm, catalog: Option<&Arc<Catalog>
     {
         form.jump_to(name);
     }
-    let dark = ui.visuals().dark_mode;
+    // The theme's mode, not egui's `dark_mode`, which the craft theme does not drive (light tiles in the light theme, #8021).
+    let dark = Env::of(ui).view().mode() == Mode::Dark;
     let activated = glyph_grid(ui, form, dark);
     recent_row(ui, form, dark);
     if let Some(c) = form.selected {

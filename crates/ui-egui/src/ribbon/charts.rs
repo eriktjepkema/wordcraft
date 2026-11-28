@@ -61,7 +61,7 @@ pub(super) fn smart_art_design(row: &mut RibbonRow<'_>, app: &mut WordApp) {
         let on = layouts.iter().position(|l| *l == g.layout);
         let colors = g.colors;
         let theme = &theme;
-        let line = ui.visuals().weak_text_color();
+        let line = craft::ui::style::rgba_color(craft::ui::runtime::env::Env::of(ui).tokens.color.text.muted);
         let picked = pick_tile(ui, tl!("Layouts"), 4, CaptionPlace::None, on, layouts.len(), |at| match layouts.get(at).copied() {
             Some(layout) => Tile::new(tl!(layout.label()).to_string())
                 .thumb(ThumbAspect::new(46, 31), move |cx, r| crate::dialogs_smart_art::preview(cx, r, layout, colors, theme, line)),

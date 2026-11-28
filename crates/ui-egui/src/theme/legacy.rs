@@ -476,9 +476,6 @@ impl Tokens {
             on_close: Color32::WHITE,
         }
     }
-    pub fn get(ctx: &egui::Context) -> Tokens {
-        if ctx.global_style().visuals.dark_mode { Tokens::dark() } else { Tokens::light() }
-    }
 }
 
 /// Add `faces` after every other font of the interface families.

@@ -44,7 +44,8 @@ pub(crate) fn button_picture(id: &str) -> &'static str {
 
 /// The ink math pictures are rendered in: the theme's text colour.
 fn ink(ui: &Ui) -> Color32 {
-    ui.visuals().text_color()
+    // The craft theme's token, not egui's visuals, which the craft theme does not drive (grey ink in the light theme, #7975).
+    craft::ui::style::rgba_color(craft::ui::runtime::env::Env::of(ui).tokens.color.text.normal)
 }
 
 /// The keys `0..n` as a collection source.
@@ -382,6 +383,21 @@ mod placeholder_tests {
             assert!(!ui.fonts_mut(|fonts| fonts.has_glyph(&font, '∁')));
             assert_eq!(super::math_placeholder(ui, "x+\u{2201}"), "x+\\complement");
             assert_eq!(super::math_placeholder(ui, "x+y"), "x+y");
+        });
+        output.textures_delta.clear();
+    }
+
+    /// The pictures' ink is the craft theme's text colour, so it reads against the window in the light theme (egui's
+    /// own visuals are not driven by the craft theme and gave grey ink there, #7975).
+    #[test]
+    fn the_equation_ink_contrasts_with_the_theme_surface() {
+        let ctx = crate::test_harness::context();
+        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            let env = craft::ui::runtime::env::Env::of(ui);
+            let luma = |c: egui::Color32| 0.299 * f32::from(c.r()) + 0.587 * f32::from(c.g()) + 0.114 * f32::from(c.b());
+            let ink = super::ink(ui);
+            let surface = craft::ui::style::rgba_color(env.tokens.color.surface.background);
+            assert!((luma(ink) - luma(surface)).abs() > 100.0, "ink {ink:?} against {surface:?}");
         });
         output.textures_delta.clear();
     }
